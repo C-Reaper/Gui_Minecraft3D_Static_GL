@@ -154,16 +154,15 @@ GLuint loadTexture(const char* path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Lade Textur (mit einer Bibliothek wie stb_image oder SOIL)
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
-    if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    Sprite tex = Sprite_Load((char*)path);
+    if (tex.img) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.w, tex.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.img);
         glGenerateMipmap(GL_TEXTURE_2D);
+        
+        Sprite_Free(&tex);
     } else {
         printf("Error: Texture\n");
     }
-    stbi_image_free(data);
     return textureID;
 }
 
@@ -442,15 +441,16 @@ void Setup(AglWindow* w){
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
 
-    stbi_set_flip_vertically_on_load(1);
-    int width,height,n;
-    unsigned char* data = stbi_load("./data/Atlas.png", &width, &height, &n, 0);
-    if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, (n==3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, data);
+    Image_Enable_FlipV();
+    
+    Sprite tex = Sprite_Load("./data/Atlas.png");
+    if (tex.img) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.w, tex.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.img);
         glGenerateMipmap(GL_TEXTURE_2D);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        stbi_image_free(data);
+        
+        Sprite_Free(&tex);
+    } else {
+        printf("Error: Texture\n");
     }
 
     glUseProgram(shaderProgram);
